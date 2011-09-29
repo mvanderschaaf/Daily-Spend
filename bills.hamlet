@@ -1,0 +1,15 @@
+!!!
+<html>
+    <body>
+        <h1>Bills
+        <table>
+            <tr>
+                <th>Name
+                <th>Amount
+                <th>Frequency
+            $forall bill <- bills
+                <tr>
+                    <td>#{ billName bill }
+                    <td>#{ billAmount bill }
+                    <td>#{ billFreq bill }
+        <a href=@{AddBillR}>Add bill

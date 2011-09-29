@@ -1,0 +1,6 @@
+<html>
+    <body>
+        <h1>Add a bill
+        <form method=post action=@{AddBillR} enctype=#{enctype}>
+            ^{widget}
+            <input type=submit>
