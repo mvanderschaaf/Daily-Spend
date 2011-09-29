@@ -1,0 +1,6 @@
+<html>
+    <body>
+        <h1>Add a goal
+        <form method=post action=@{AddGoalR} enctype=#{enctype}>
+            ^{widget}
+            <input type=submit>

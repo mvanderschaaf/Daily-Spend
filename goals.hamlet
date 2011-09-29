@@ -1,0 +1,15 @@
+!!!
+<html>
+    <body>
+        <h1>Goals
+        <table>
+            <tr>
+                <th>Name
+                <th>Amount
+                <th>Target date
+            $forall goal <- goals
+                <tr>
+                    <td>#{ goalName goal }
+                    <td>#{ goalAmount goal }
+                    <td>#{ goalTargetDate goal }
+        <a href=@{AddGoalR}>Add goal

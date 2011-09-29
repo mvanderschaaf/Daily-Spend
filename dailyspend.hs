@@ -8,6 +8,7 @@ import Text.Blaze
 import Control.Applicative ((<$>), (<*>))
 import Control.Arrow ((&&&))
 import Data.Text (Text, pack)
+import Data.Time (Day)
 
 data Frequency = Weekly | BiWeekly | Monthly | SemiMonthly
     deriving (Show, Read, Eq, Enum, Bounded)
@@ -16,11 +17,19 @@ derivePersistField "Frequency"
 instance ToHtml Frequency where
     toHtml = string . show
 
+instance ToHtml Day where
+    toHtml = string . show
+
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persist|
 Bill
     name Text
     amount Int
     freq Frequency
+    saved Int
+Goal
+    name Text
+    amount Int
+    targetDate Day
     saved Int
 |]
 
@@ -29,6 +38,8 @@ data DailySpend = DailySpend ConnectionPool
 mkYesod "DailySpend" [parseRoutes|
 /bills BillR GET
 /bills/add AddBillR GET POST
+/goals GoalR GET
+/goals/add AddGoalR GET POST
 |]
 
 instance Yesod DailySpend where
@@ -72,6 +83,34 @@ postAddBillR = do
             runDB $ insert (bill 0)
             redirect RedirectTemporary BillR
 	_ -> defaultLayout $(whamletFile "addBill.hamlet")
+
+getGoalR :: Handler RepHtml
+getGoalR = do
+    allGoals <- runDB $ selectList [] [Desc GoalTargetDate]
+    let goals = map snd allGoals
+    hamletToRepHtml $(hamletFile "goals.hamlet")
+
+goalForm = renderDivs $ Goal
+    <$> areq textField "Name" Nothing
+    <*> areq intField "Amount" Nothing
+    <*> areq (jqueryDayField def
+        { jdsChangeYear = True
+	, jdsYearRange = "1900:+10"
+	}) "Target Date" Nothing
+
+getAddGoalR :: Handler RepHtml
+getAddGoalR = do
+    ((_, widget), enctype) <- generateFormPost goalForm
+    defaultLayout $(whamletFile "addGoal.hamlet")
+
+postAddGoalR :: Handler RepHtml
+postAddGoalR = do
+    ((result, widget), enctype) <- runFormPost goalForm
+    case result of
+        FormSuccess goal -> do
+	    runDB $ insert (goal 0)
+	    redirect RedirectTemporary GoalR
+	_ -> defaultLayout $(whamletFile "addGoal.hamlet")
 
 openConnectionCount :: Int
 openConnectionCount = 10
